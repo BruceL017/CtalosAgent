@@ -1,0 +1,8 @@
+{
+  "name": "@enterprise-agent/db-schema",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "migrate": "docker compose exec postgres psql -U agent -d agent_db -f /migrations/001_initial_schema.sql"
+  }
+}

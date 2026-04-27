@@ -1,0 +1,112 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: agent_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agent
+      POSTGRES_PASSWORD: agent_secret
+      POSTGRES_DB: agent_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./packages/db-schema/migrations:/migrations:ro
+      - ./shared/artifacts:/artifacts:rw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agent -d agent_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: agent_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api-server:
+    build:
+      context: .
+      dockerfile: apps/api-server/Dockerfile
+    container_name: agent_api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://agent:agent_secret@postgres:5432/agent_db
+      REDIS_URL: redis://redis:6379
+      AGENT_RUNTIME_URL: http://agent-runtime:8000
+      PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./shared/artifacts:/app/artifacts:rw
+
+  agent-runtime:
+    build:
+      context: .
+      dockerfile: apps/agent-runtime/Dockerfile
+    container_name: agent_runtime
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://agent:agent_secret@postgres:5432/agent_db
+      REDIS_URL: redis://redis:6379
+      API_SERVER_URL: http://api-server:3001
+      ARTIFACTS_DIR: /app/artifacts
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      SILICONFLOW_API_KEY: ${SILICONFLOW_API_KEY:-}
+      SILICONFLOW_BASE_URL: ${SILICONFLOW_BASE_URL:-https://api.siliconflow.cn/v1}
+      SILICONFLOW_MODEL: ${SILICONFLOW_MODEL:-Pro/zai-org/GLM-4.7}
+      SILICONFLOW_EMBEDDING_API_KEY: ${SILICONFLOW_EMBEDDING_API_KEY:-}
+      SILICONFLOW_EMBEDDING_MODEL: ${SILICONFLOW_EMBEDDING_MODEL:-Qwen/Qwen3-VL-Embedding-8B}
+      SILICONFLOW_EMBEDDING_BASE_URL: ${SILICONFLOW_EMBEDDING_BASE_URL:-https://api.siliconflow.cn/v1}
+      DEFAULT_PROVIDER: ${DEFAULT_PROVIDER:-openai}
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-random-string-at-least-32-chars}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-this-to-another-random-string-32-chars}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_DEFAULT_REPO: ${GITHUB_DEFAULT_REPO:-}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      LARK_APP_ID: ${LARK_APP_ID:-}
+      LARK_APP_SECRET: ${LARK_APP_SECRET:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_DEFAULT_CHAT_ID: ${TELEGRAM_DEFAULT_CHAT_ID:-}
+      USE_REAL_ADAPTERS: ${USE_REAL_ADAPTERS:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./shared/artifacts:/app/artifacts:rw
+
+  web-console:
+    build:
+      context: .
+      dockerfile: apps/web-console/Dockerfile
+    container_name: agent_web
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-server
+
+volumes:
+  postgres_data:
+  redis_data:

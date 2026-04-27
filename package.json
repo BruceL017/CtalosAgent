@@ -1,0 +1,46 @@
+{
+  "name": "ctalos-agent",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "description": "CtalosAgent (Enterprise Agent) - 企业级中控 Agent 系统",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "pnpm run typecheck:api && pnpm run typecheck:web",
+    "typecheck:api": "cd apps/api-server && npx tsc --noEmit",
+    "typecheck:web": "cd apps/web-console && npx tsc --noEmit",
+    "test": "pnpm run test:python && pnpm run test:api && pnpm run test:web",
+    "test:python": "cd apps/agent-runtime && PYTHONPATH=src .venv/bin/python -m pytest tests/ -v",
+    "test:api": "pnpm --filter api-server build && cd apps/api-server && npx vitest run",
+    "test:web": "pnpm --filter web-console build",
+    "test:real": "cd apps/agent-runtime && PYTHONPATH=src .venv/bin/python -m pytest tests/test_provider_real.py tests/test_end_to_end_real_llm.py tests/test_embedding_service.py tests/test_github_real.py -v",
+    "build": "pnpm --filter api-server build && pnpm --filter web-console build",
+    "build:api": "pnpm --filter api-server build",
+    "build:web": "pnpm --filter web-console build",
+    "smoke": "bash smoke-test.sh",
+    "dev": "pnpm run -r --parallel dev",
+    "dev:api": "pnpm --filter api-server dev",
+    "dev:web": "pnpm --filter web-console dev",
+    "dev:agent": "cd apps/agent-runtime/src && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:infra": "docker compose up -d postgres redis",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "db:migrate": "docker compose exec postgres psql -U agent -d agent_db -f /migrations/001_initial_schema.sql && docker compose exec postgres psql -U agent -d agent_db -f /migrations/002_state_machine_subagents.sql && docker compose exec postgres psql -U agent -d agent_db -f /migrations/003_sessions_and_memory_scope.sql && docker compose exec postgres psql -U agent -d agent_db -f /migrations/004_workflow_states.sql",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0",
+    "python": ">=3.11.0"
+  }
+}

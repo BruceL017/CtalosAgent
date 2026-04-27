@@ -1,0 +1,39 @@
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.env
+.env.local
+.DS_Store
+*.log
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+coverage/
+*.tsbuildinfo
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archives / Dumps
+*.tar.gz
+*.zip
+*.dump
+*.sql.gz
+
+# Cache
+.turbo/
+.cache/
+.next/
+out/
+
+# Local overrides
+*.local
+
+# Artifacts
+shared/artifacts/*
+!.gitkeep
