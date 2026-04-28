@@ -1,6 +1,6 @@
 # CtalosAgent v0.3.1
 
-> 原名 Enterprise Agent。CtalosAgent — 企业级中控 Agent 系统。具备 Web 控制台、CLI 入口、Agent Runtime、长期记忆、Skill 自我迭代、Subagent 编排、多模型 Provider 路由、真实工具集成、MCP Gateway、权限策略引擎、审批流、结构化事件日志、Replay 调试、补偿式回滚能力。
+> CtalosAgent — 企业级中控 Agent 系统。具备 Web 控制台、CLI 入口、Agent Runtime、长期记忆、Skill 自我迭代、Subagent 编排、多模型 Provider 路由、真实工具集成、MCP Gateway、权限策略引擎、审批流、结构化事件日志、Replay 调试、补偿式回滚能力。
 
 **当前版本**: v0.3.1 | **完成度**: 99/100 | **状态**: Release Candidate — 团队试运行就绪
 
