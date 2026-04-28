@@ -1,4 +1,4 @@
-# Enterprise Agent Spec v0.1
+# CtalosAgent Spec v0.1
 
 ## 1. 背景与目标
 
